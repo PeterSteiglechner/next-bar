@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Bar-hopping – Helper </title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css">
+      <style>
+        table.fixed {
+            table-layout: fixed;
+            width: 50%; /* Set a specific width in pixels or percentage */
+        }
+        th, td {
+            border: 1px solid black;
+            padding: 0px;
+        }
+    </style>
+</head>
+<body>
+
+    <img src="{{ url_for('static', filename='beer-3711733_960_720.jpg') }}" alt="fun, fun, fun">
+
+    <h1>Bars, ratings, and probabilities:</h1>
+
+    {{ barsProbs  | safe}}
+
+
+    <h1> The next bar:
+
+    <span id="selected_bar">{{ selected_bar }}</span>
+
+    </h1>
+
+    <p>... have fun!</p>
+
+    <button onclick="rerun()">Select a new bar</button>
+
+    <script>
+        function rerun() {
+            var selected_barItem = document.getElementById("selected_bar");
+            fetch('/rerun')
+                .then(response => response.json())
+                .then(data => selected_barItem.innerText = data.selected_bar);
+        }
+    </script>
+
+</body>
+</html>

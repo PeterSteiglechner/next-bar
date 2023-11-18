@@ -1,0 +1,10 @@
+click @ file:///work/perseverance-python-buildout/croot/click_1698845879718/work
+Flask @ file:///work/perseverance-python-buildout/croot/flask_1698851879778/work
+itsdangerous @ file:///tmp/build/80754af9/itsdangerous_1621432558163/work
+Jinja2 @ file:///work/perseverance-python-buildout/croot/jinja2_1698847462642/work
+MarkupSafe @ file:///work/perseverance-python-buildout/croot/markupsafe_1698846636000/work
+mkl-service==2.4.0
+numpy @ file:///work/perseverance-python-buildout/croot/numpy_and_numpy_base_1698845160062/work/dist/numpy-1.26.0-cp312-cp312-linux_x86_64.whl#sha256=fdc35057024038070345ff9f7f47ed48ecdb21dd72461617bdadf4f5d1634fcb
+setuptools==68.0.0
+Werkzeug @ file:///work/perseverance-python-buildout/croot/werkzeug_1698851019178/work
+wheel==0.41.2
