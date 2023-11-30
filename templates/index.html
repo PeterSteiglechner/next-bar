@@ -12,6 +12,15 @@
             border: 1px solid black;
             padding: 0px;
         }
+        body, p  {
+            font-size: 16px;
+        }
+        button{
+            font-size: 18px;
+        }
+        .large-button {
+            font-size: 36px;
+        }
     </style>
 </head>
 <body>
@@ -21,22 +30,13 @@
     <h1>Bars/Cafés, ratings, and probabilities:</h1>
 
 
-    <div id="ratingsTable">
+    <div style="margin-top: 1cm;margin-bottom: 1cm;" id="ratingsTable">
         {{ probs | safe }}
     </div>
 
 
-    <h1> The next bar/café:
-
-    <span id="selected">{{ selected }}</span>
-
-    </h1>
-
-    <p>... have fun!</p>
-
-
     <!-- Form for user input -->
-    <form id="updateRatingsForm">
+    <form style="margin-bottom: 1cm;" id="updateRatingsForm">
         <label for="userName">Your Name:</label>
         <input type="text" id="userName" name="userName" required>
         <br>
@@ -50,7 +50,19 @@
     </form>
 
 
-    <button onclick="rerun()">new</button>
+
+    <h1> The next bar/café:
+
+    <span id="selected">{{ selected }}</span>
+
+
+    </h1>
+
+    <p>... have fun!</p>
+
+    <div style="margin-top: 1cm;" > </div>
+
+    <button class="large-button" onclick="rerun()">new</button>
 
     <script>
         function rerun() {
