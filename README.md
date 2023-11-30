@@ -4,13 +4,13 @@ Code deployed at
 
 https://www.pythonanywhere.com/user/petersteiglechner/files/home/petersteiglechner/mysite/
 
-Website available at: http://petersteiglechner.pythonanywhere.com/
+Website: http://petersteiglechner.pythonanywhere.com/
 
 ## Description
 
-The tool is designed to suggest a bar/café from a pre-defined set taking the users' preferences into account, but maintaining some degree of stochasticity to foster exploration.  
+The tool is designed to suggest a bar/café from a pre-defined set taking the users' preferences into account, but maintaining some degree of randomness to foster exploration.  
 
-The $N$ users rate all pre-selected $n$ bars. Ratings $r_i$ of a user $i$ are hard-coded and range from $1$ (least favourite bar) to $n$ (favourite bar). The probability that a bar $x$ is chosen is
+The $N$ users rate all pre-selected $n$ bars. Ratings $r_i$ of a user $i$ are hard-coded and range from $1$ (least favourite bar) to $n$ (favourite bar) or from $0$ to $100$. They can be updated through the UI. The probability that a bar/café $x$ is chosen is
 
 $$ p(x) = 1/R \cdot \sum_{i} \, r_i(x) $$
 
@@ -20,11 +20,12 @@ where $R$ is the normalisation $\sum_{i} \, r_i(x)$.
 ## Issues and plans
 
 ### UI/Backend: Flexible users 
-- create a "User" and store their rating.
+- create a new "User"  :heavy_check_mark:  
+- store user ratings. 
 - enable user selection and load their stored ratings.
 
 ### UI: Rating input
-- make ratings adjustable
+- make ratings adjustable  :heavy_check_mark:
 
 ### UI: Bar selection/exclusion
 - create a tickbox behind each bar/café to enable manual selection or exclusion of certain bars/cafés.
