@@ -18,27 +18,68 @@
 
     <img src="{{ url_for('static', filename='beer-3711733_960_720.jpg') }}" alt="fun, fun, fun">
 
-    <h1>Bars, ratings, and probabilities:</h1>
-
-    {{ barsProbs  | safe}}
+    <h1>Bars/Cafés, ratings, and probabilities:</h1>
 
 
-    <h1> The next bar:
+    <div id="ratingsTable">
+        {{ probs | safe }}
+    </div>
 
-    <span id="selected_bar">{{ selected_bar }}</span>
+
+    <h1> The next bar/café:
+
+    <span id="selected">{{ selected }}</span>
 
     </h1>
 
     <p>... have fun!</p>
 
-    <button onclick="rerun()">Select a new bar</button>
+
+    <!-- Form for user input -->
+    <form id="updateRatingsForm">
+        <label for="userName">Your Name:</label>
+        <input type="text" id="userName" name="userName" required>
+        <br>
+        <label for="establishment">Establishment:</label>
+        <input type="text" id="establishment" name="establishment" required>
+        <br>
+        <label for="newRating">New Rating:</label>
+        <input type="number" id="newRating" name="newRating" min="1" max="23" required>
+        <br>
+        <button type="button" onclick="updateRatings()">Update Ratings</button>
+    </form>
+
+
+    <button onclick="rerun()">new</button>
 
     <script>
         function rerun() {
-            var selected_barItem = document.getElementById("selected_bar");
+            var selectedItem = document.getElementById("selected");
             fetch('/rerun')
                 .then(response => response.json())
-                .then(data => selected_barItem.innerText = data.selected_bar);
+                .then(data => selectedItem.innerText = data.selected);
+        }
+
+
+        function updateRatings() {
+        // Get user input from the form
+        var userName = document.getElementById("userName").value;
+        var establishment = document.getElementById("establishment").value;
+        var newRating = document.getElementById("newRating").value;
+
+        // Send the user input to the server to update ratings
+        fetch('/update_ratings', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ userName: userName, establishment: establishment, newRating: newRating }),
+        })
+            .then(response => response.json())
+            .then(data => {
+                // Update the table with the new ratings
+                document.getElementById("ratingsTable").innerHTML = data.newTable;
+            });
         }
     </script>
 
