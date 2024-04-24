@@ -6,7 +6,7 @@
       <style>
         table.fixed {
             table-layout: fixed;
-            width: 50%; /* Set a specific width in pixels or percentage */
+            width: 50%;
         }
         th, td {
             border: 1px solid black;
@@ -22,49 +22,234 @@
             font-size: 36px;
         }
     </style>
+     <script type="text/javascript"
+            src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_SVG">
+    </script>
 </head>
 <body>
 
-    <img src="{{ url_for('static', filename='beer-3711733_960_720.jpg') }}" alt="fun, fun, fun">
+    <img src="{{ url_for('static', filename='beer-3711733_960_720.jpg') }}" alt="fun, fun, fun" width="500" height="auto">
 
     <h1>Bars/Cafés, ratings, and probabilities:</h1>
 
+    <h5>Description:</h5>
+    <p>
+        This tool helps your group to decide which bar to hit next. It suggests a new bar by striking a balance between exploring new bars while also exploiting the preferences in the group.
+    </p>
+    <h5>Usage:</h5>
+    <p> 
+        Simply enter a user and multiple bars (one at a time) under "Add or adjust user/bar/rating"
+    </p>
 
-    <div style="margin-top: 1cm;margin-bottom: 1cm;" id="ratingsTable">
-        {{ probs | safe }}
-    </div>
+    <h2>Provide ratings</h2>
+
+    <ul><li>User = column (may be a new user)</li><li>Place = row (hard-coded at the moment)</li><li>Rating = cell value</li></ul>
 
 
-    <!-- Form for user input -->
+    <h3> Add bar/cafe</h3>
+    <form style="margin-bottom: 1cm;" id="updateRatingsForm">
+        <label for="placeName">Place:</label>
+        <input type="text" id="placeName" name="placeName" required>
+        <button type="button" onclick="addBar()">add</button>
+    </form>
+
+    <h3>Rate (one user/one place)</h3>
+
     <form style="margin-bottom: 1cm;" id="updateRatingsForm">
         <label for="userName">Your Name:</label>
         <input type="text" id="userName" name="userName" required>
         <br>
-        <label for="establishment">Establishment:</label>
-        <input type="text" id="establishment" name="establishment" required>
+        <label for="placeList">Place:</label>
+        <select id="placeList" name="placeList" required>
+            {% for place in unique_places %}
+                <option value="{{ place }}">{{ place }}</option>
+            {% endfor %}
+        </select>
         <br>
-        <label for="newRating">New Rating:</label>
-        <input type="number" id="newRating" name="newRating" min="1" max="23" required>
+        <label for="newRating">New Rating (1-10):</label>
+        <input type="number" id="newRating" name="newRating" min="1" max="10" required>
+        <button type="button" onclick="updateRatings()">Update rating</button>
         <br>
-        <button type="button" onclick="updateRatings()">Update Ratings</button>
     </form>
 
+    <h3>Rate (one user/all places)</h3>
+
+    <form style="margin-bottom: 1cm;" id="updateRatingsCombiForm">
+        <label for="userNameCombi">Your Name:</label>
+        <input type="text" id="userNameCombi" name="userNameCombi" required>
+        <br>
+        <table>
+            <thead>
+                <tr>
+                    <th>Place</th>
+                    <th>New Rating (1-10)</th>
+                </tr>
+            </thead>
+
+            <tbody id="placesTableBody">
+               {% for place in unique_places %}
+                <tr>
+                    <td>{{ place }}</td>
+                    <td><input type="number" id="ratings[]" name="ratings[]" min="1" max="10" required></td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        <br>
+        <button type="button" onclick="updateRatingsCombi()">Update all ratings for one user</button>
+        <br>
+    </form>
+
+    <h2>Tuning probabilities</h2>
+
+    <p> The take-the-best (ttb) parameter is used to scale the probabilities and balances exploration vs. exploitation: 
+    <math display="block" class="tml-display" style="display:block math;">
+      <mrow>
+        <mi>P</mi>
+        <mo form="prefix" stretchy="false">(</mo>
+        <mrow>
+          <mtext></mtext>
+          <mi>bar</mi>
+        </mrow>
+        <mtext>
+        </mtext>
+        <mi>b</mi>
+        <mo form="postfix" stretchy="false">)</mo>
+        <mo>=</mo>
+        <mfrac>
+          <mn>1</mn>
+          <mrow>
+            <msub>
+              <mo movablelimits="false">∑</mo>
+              <mi>b</mi>
+            </msub>
+            <mrow style="padding:0.1em 0 0 0;border-top:0.065em solid;">
+              <mi>r</mi>
+            </mrow>
+            <mo form="prefix" stretchy="false">(</mo>
+            <mi>b</mi>
+            <msup>
+              <mo form="postfix" stretchy="false">)</mo>
+              <mrow>
+                <mi>t</mi>
+                <mi>t</mi>
+                <mi>b</mi>
+              </mrow>
+            </msup>
+          </mrow>
+        </mfrac>
+        <mo>⋅</mo>
+        <mrow style="padding:0.1em 0 0 0;border-top:0.065em solid;">
+          <mi>r</mi>
+        </mrow>
+        <mo form="prefix" stretchy="false">(</mo>
+        <mi>b</mi>
+        <msup>
+          <mo form="postfix" stretchy="false">)</mo>
+          <mrow>
+            <mi>t</mi>
+            <mi>t</mi>
+            <mi>b</mi>
+          </mrow>
+        </msup>
+      </mrow>
+    </math>
+    </p>
+
+    <ul>
+        <li>  ttb = 0 (minimum weighting) --> All bars are equally likely.       </li>
+        <li>  ttb = 1 (linear weighting) --> default. A bar with rating 4 will be selected twice as often as a bar with rating 2. </li>
+        <li>  ttb = 100 (maximum weighting) --> The bar with the highest ranking will be selected with ~100%.       </li>
+        <li>  (ttb = -100 ("anti-weighting") --> the bar with the **lowest** ranking will be selected with ~100%).      </li>
+    </ul>
+
+    <form style="margin-bottom: 1cm;" id="ttb_param_field_form">
+        <br>
+        <label for="ttb_param_input">Update take-the-best coefficient:</label>
+        <input type="number" id="ttb_param_input" name="ttb_param_input" min="-100" max="100" required>
+        <button type="button" onclick="updateTtbParam()">update</button>
+        <br>
+    </form>
+
+    <p style="margin-bottom:3cm;">Current value of ttb: <span id="ttb_param_view">{{ ttb_param }}  </span></p>
 
 
-    <h1> The next bar/café:
 
-    <span id="selected">{{ selected }}</span>
+    <h2>Ratings</h2>
+    <div style="margin-top: 1cm;margin-bottom: 1cm;" id="ratingsTable">
+        {{ probs | safe }}
+    </div>
+
+    <button type="button" onclick="clearRatings()">Clear ratings and places</button>
 
 
-    </h1>
 
-    <p>... have fun!</p>
+    <form id="saveForm" style="margin-bottom:3cm;">
+        <label for="columnName">Enter user you want to save:</label>
+        <input type="text" id="columnName" name="columnName">
+        <label for="titleInput">  and title:</label>
+        <input type="text" id="titleInput" name="titleInput">
+        <button type="button" onclick="saveColumn()">Save Column as title_user.csv</button>
+    </form>
+    
+   
 
-    <div style="margin-top: 1cm;" > </div>
+    <h1> The next bar/café:    </h1>
 
-    <button class="large-button" onclick="rerun()">new</button>
+    <style>
+        .result {
+           width: 11em;
+           border: 4px solid #DE3163;
+           box-shadow: 9px 6px 4px #5B2C6F;
+           padding: 17px 22px;
+           background-image: linear-gradient(150deg, #EAFAF1 , #E8DAEF 30%,#E5E8E8 );
+           font-size: xxx-large;
+        }
+     </style>
+     <div class="result">
+        <p  style="font-size:2.5vw"> <span id="selected">{{ selected }}</span></p>
+     </div>
+     <button class="large-button" onclick="rerun()">new</button>
+
+    <!-- Form for user input
+    <form style="margin-bottom: 1cm;" id="pForm">
+        <label for="p">Exploitation (large p) vs. exploration (small p): </label>
+        <input type="text" id="p" name="p" value="1" required>
+        <br>
+    </form>
+    -->
+    <p style="margin-bottom:1cm;">... have fun!</p>
+
+
+
+
 
     <script>
+
+        function addBar() {
+            // Get user input from the form
+            var placeName = document.getElementById("placeName").value;
+            var viewer_ttb_param = document.getElementById("ttb_param_view");
+
+            // Send the user input to the server to update ratings
+            fetch('/add_bar', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ placeName: placeName }),
+            })
+                .then(response => response.json())
+                .then(data => {
+                    // Update the table with the new ratings
+                    document.getElementById("ratingsTable").innerHTML = data.newTable;
+                    document.getElementById("ratingsTable").innerHTML = data.newTable;
+                });
+            
+            fetchAndUpdatePlaces();
+
+            }
+
         function rerun() {
             var selectedItem = document.getElementById("selected");
             fetch('/rerun')
@@ -73,26 +258,149 @@
         }
 
 
-        function updateRatings() {
-        // Get user input from the form
-        var userName = document.getElementById("userName").value;
-        var establishment = document.getElementById("establishment").value;
-        var newRating = document.getElementById("newRating").value;
+        function updateTtbParam() {
+            var updated_ttb_param = document.getElementById("ttb_param_input").value;
+            var viewer_ttb_param = document.getElementById("ttb_param_view");
+            
+            // Send the user input to the server to update ttb_param
+            fetch('/update_ttb_param', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ updated_ttb_param: updated_ttb_param}),
+                })
+                    .then(response => response.json())
+                    .then(data => {
+                        // Update the table with the new ratings
+                        document.getElementById("ratingsTable").innerHTML = data.newTable;
+                        viewer_ttb_param.innerText = data.new_ttb_param;
+                    })
+            }
+            
+            function updateRatings() {
+            // Get user input from the form
+            var userName = document.getElementById("userName").value;
+            var place = document.getElementById("place").value;
+            var newRating = document.getElementById("newRating").value;
 
-        // Send the user input to the server to update ratings
-        fetch('/update_ratings', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({ userName: userName, establishment: establishment, newRating: newRating }),
-        })
-            .then(response => response.json())
-            .then(data => {
-                // Update the table with the new ratings
-                document.getElementById("ratingsTable").innerHTML = data.newTable;
+            // Send the user input to the server to update ratings
+            fetch('/update_ratings', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ userName: userName, place: place, newRating: newRating }),
+            })
+                .then(response => response.json())
+                .then(data => {
+                    // Update the table with the new ratings
+                    document.getElementById("ratingsTable").innerHTML = data.newTable;
+                });
+            }
+
+            function updateRatingsCombi() {
+                // Get user input from the form
+                var userNameCombi = document.getElementById("userNameCombi").value;
+                // Collect ratings from all input fields
+                var ratings = [];
+                var ratingInputs = document.getElementsByName("ratings[]");
+                for (var i = 0; i < ratingInputs.length; i++) {
+                    ratings.push(ratingInputs[i].value);
+                }
+                // convert ratings to integers
+                var ratings = Array.from(ratingInputs, input => parseInt(input.value));
+
+                // Send the user input to the server to update ratings
+                fetch('/update_ratings_combi', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ userName: userNameCombi, ratings: ratings }),
+                })
+                    .then(response => response.json())
+                    .then(data => {
+                        // Update the table with the new ratings
+                        document.getElementById("ratingsTable").innerHTML = data.newTable;
+                    });
+            }
+
+
+
+
+        function saveColumn() {
+            var columnName = document.getElementById("columnName").value;
+            var titleInput = document.getElementById("titleInput").value;
+            console.log("User name:", columnName); 
+            console.log("titleInput:", titleInput);
+
+            fetch('/save_column', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ columnName: columnName , titleInput:titleInput})
+            }).then(response => {
+                if (response.ok) {
+                    alert("Column saved successfully!");
+                } else {
+                    alert("Error saving column.");
+                }
             });
         }
+
+
+    // Function to update the form with the received places data
+    function updateForm(uniquePlaces) {
+        var tbody = document.getElementById('placesTableBody');
+        tbody.innerHTML = '';
+
+        uniquePlaces.forEach(function(place) {
+            var tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td>${place}</td>
+                <td><input type="number" id="ratings[]" name="ratings[]" min="1" max="10" required></td>
+            `;
+            tbody.appendChild(tr);
+        });
+
+        var select = document.getElementById('placeList');
+        select.innerHTML = '';
+
+        uniquePlaces.forEach(function(place) {
+            var option = document.createElement('option');
+            option.value = place;
+            option.textContent = place;
+            select.appendChild(option);
+        });
+    }
+
+    // Function to fetch the updated places data from the server
+    function fetchAndUpdatePlaces() {
+        fetch('/get_unique_places')
+            .then(response => response.json())
+            .then(data => updateForm(data.unique_places))
+            .catch(error => console.error('Error fetching places:', error));
+    }
+
+    // Function to fetch the updated places data from the server
+    function clearRatings() {
+        fetch('/clear_r')
+            .then(response => response.json())
+            .then(data => {
+                        // Update the table with the new ratings
+                        document.getElementById("ratingsTable").innerHTML = data.newTable;
+                    });
+            
+        fetchAndUpdatePlaces();
+        }
+
+    // Call fetchAndUpdatePlaces initially to populate the form
+    fetchAndUpdatePlaces();
+
+
+
     </script>
 
 </body>
